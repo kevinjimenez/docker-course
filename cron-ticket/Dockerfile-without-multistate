@@ -1,0 +1,37 @@
+# esta imagen ya tienes un directorio /app
+# forzar una plataforma FROM --platform=linux/amd64 node:19.2.0-alpine3.16
+# uso de buildx
+# FROM --platform=$BUILDPLATFORM node:19.2.0-alpine3.16
+# docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm64/v8 -t kevjimenez24/cron-ticket:latest --push .
+# noramal => FROM node:19.2.0-alpine3.16
+FROM node:19.2.0-alpine3.16
+
+# es como hacer un cd app
+WORKDIR /app
+
+# si no tengo el WORKDIR seria asi
+# COPY app.js package.json /app/
+# Dest /app (Destino: fuente)
+COPY package.json ./
+
+# instalar dependencias
+RUN npm install
+
+# Dest /app (Destino: fuente)
+# copia todo el directorio (es todo sin exclusión)
+# COPY . .
+COPY . .
+
+# Testing
+RUN npm run test
+
+# eliminar files y carpetas innecesarias
+
+RUN rm -rf tests && rm -rf node_modules
+# RUN rm -rf node_modules
+
+# unicamente las de prod
+RUN npm install --prod
+
+# comando del contenedor
+CMD [ "node", "app.js" ]
